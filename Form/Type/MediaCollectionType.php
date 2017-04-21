@@ -46,15 +46,19 @@ class MediaCollectionType extends AbstractType
                             if (!isset($media['binaryContent'])) continue;
                             if (is_array($media['binaryContent'])) {
                                 for ($i=0; $i<count($media['binaryContent']); $i++) {
-                                    $cloneMedia = $media;
-                                    $cloneMedia['binaryContent'] = $media['binaryContent'][$i];
-                                    if ($cloneMedia['binaryContent']) $newData[++$j]=$cloneMedia;
+                                    if (!empty($media['binaryContent'][$i])) {
+                                        $cloneMedia = $media;
+                                        $cloneMedia['binaryContent'] = $media['binaryContent'][$i];
+                                        if ($cloneMedia['binaryContent']) $newData[++$j]=$cloneMedia;
+                                    }
                                 }
                             } else {
                                 $newData[++$j] = $media;
                             }
                         }
+
                         $event->setData($newData);
+
                     }
 
                 };
@@ -79,7 +83,6 @@ class MediaCollectionType extends AbstractType
                 'entry_type' => MediaType::class,
                 'provider' => 'file',
                 'mediazone' => true,
-                'ignore_error' => false,
                 'entry_options' => array()
                 ));
 

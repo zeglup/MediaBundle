@@ -3,6 +3,8 @@
  */
 $(function () {
 
+    var readerLoading = false;
+
     var switchInputFileToInputText = function (formGroup){
         var inputText = $(formGroup).find('input[type="text"]');
         if (!$(inputText).length) {
@@ -50,30 +52,52 @@ $(function () {
         return file.name;
     };
 
+
+
     var processFile = function (file, formGroup) {
+
         var reader  = new FileReader();
-        reader.addEventListener("load", function () {
+
+        reader.addEventListener('loadstart', function(){
+            $(formGroup).find('input[id$="originalFilename"]').val(file.name);
+            $(formGroup).find('span.media-info').html(
+                    media_file(file, reader, formGroup)
+                );
+            if ($(formGroup).find('input[type="text"]').length) readerLoading = true;
+        });
+        reader.addEventListener("loadend", function () {
+
+
+
             if (reader.result) {
-                if ($(formGroup).data('multi')=='on') {
-                    $(formGroup).find('span.media-info').append(
-                        eval('media_'+$(formGroup).data('provider')+'(file, reader, formGroup);')
-                    );
-                } else {
-                    $(formGroup).find('span.media-info').html(
-                        eval('media_'+$(formGroup).data('provider')+'(file, reader, formGroup);')
-                    );
-                }
+                $(formGroup).find('input[id$="originalFilename"]').val(file.name);
+                $(formGroup).find('span.media-info').html(
+                    eval('media_'+$(formGroup).data('provider')+'(file, reader, formGroup)')
+                );
                 var inputText = $(formGroup).find('input[type="text"]');
-                $(formGroup).find('[id$="originalFilename"]').val(file.name);
-                if ($(inputText).length) $(inputText).val(reader.result);
+                if ($(inputText).length) {
+                    $(inputText).val(reader.result);
+                }
+
+            } else if ($(formGroup).find('input[type="text"]').length && $(formGroup).data('multi')) {
+
+                $(formGroup).html($($(formGroup).find('span.media-info').html('error '+file.name+' too big to be dropped').addClass('text-warning')));
             }
+            readerLoading =  false;
 
         }, false);
+
+
         reader.readAsDataURL(file);
     };
 
     //on vire le bloc empty de easyadmin
     $('[data-mediazone="on"] > .empty').remove();
+
+    $('[data-mediazone="on"]').closest('form').submit(function (evt) {
+            if (readerLoading) evt.preventDefault();
+        });
+
 
     $('[data-mediazone="on"] > span.message')
     .on(

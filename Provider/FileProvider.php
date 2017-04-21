@@ -6,6 +6,8 @@ use Donjohn\MediaBundle\Model\Media;
 use Donjohn\MediaBundle\Provider\Exception\InvalidMimeTypeException;
 use Gaufrette\Adapter\Local;
 use Gaufrette\Exception\FileNotFound;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -25,14 +27,16 @@ class FileProvider extends BaseProvider {
 
     protected $rootFolder;
     protected $uploadFolder;
+    protected $fileMaxSize;
 
 
-    public function __construct($rootFolder, $uploadFolder)
+    final public function __construct($rootFolder, $uploadFolder, $fileMaxSize)
     {
 
         $this->filesystem = new \Gaufrette\Filesystem(new Local($rootFolder, true, 0775));
         $this->rootFolder = $rootFolder;
         $this->uploadFolder = $uploadFolder;
+        $this->fileMaxSize = $fileMaxSize;
 
     }
 
@@ -142,6 +146,24 @@ class FileProvider extends BaseProvider {
     {
         //Implement extractMetaData() method.
     }
+
+    public function addEditForm(FormBuilderInterface $builder, array $options)
+    {
+        $options['constraints'] = array(new \Symfony\Component\Validator\Constraints\File([
+                        'maxSize' => $this->fileMaxSize
+                    ]));
+        $builder->add('binaryContent', FileType::class, $options );
+    }
+
+    public function addCreateForm(FormBuilderInterface $builder, array $options)
+    {
+        $options['constraints'] = array(new \Symfony\Component\Validator\Constraints\File([
+                        'maxSize' => $this->fileMaxSize
+                    ]));
+        $builder->add('binaryContent', FileType::class, $options );
+    }
+
+
 
     /**
      * @param Media $oMedia

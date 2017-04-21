@@ -12,9 +12,7 @@ use Donjohn\MediaBundle\Model\Media;
 use Donjohn\MediaBundle\Form\Transformer\MediaDataTransformer;
 use Donjohn\MediaBundle\Provider\Factory\ProviderFactory;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -57,7 +55,6 @@ class MediaType extends AbstractType
                 'data_class' => $this->classMedia,
                 'required' => false,
                 'delete_empty' => true,
-                'ignore_error' => false
                 ));
     }
 
@@ -70,11 +67,14 @@ class MediaType extends AbstractType
 
         $formOptions = array('translation_domain' => 'DonjohnMediaBundle',
                             'label' => false,
+                            'error_bubbling' => true,
                             'multiple' => $options['multiple'] ? 'multiple' : false,
                             'required' => $options['required'],
-                            'attr' => array('class' => 'hidden' )
+                            'attr' => array('class' => $options['mediazone'] ? 'hidden' : null )
                         );
-        $builder->add('binaryContent', FileType::class, $formOptions );
+        if ($media) $provider->addEditForm($builder, $formOptions);
+        else $provider->addCreateForm($builder, $formOptions);
+
         $builder->add('originalFilename', HiddenType::class);
 
         $builder->addModelTransformer(new MediaDataTransformer($provider, $this->classMedia));
@@ -109,21 +109,6 @@ class MediaType extends AbstractType
                     $event->setData(null);
                 }
             });
-        }
-
-        if ($options['ignore_error']) {
-            $builder->addEventListener(
-                FormEvents::SUBMIT,
-                function(FormEvent $event) use ($provider) {
-                    $dataTransformer = new MediaDataTransformer($provider, $this->classMedia);
-                    try {
-                        $dataTransformer->reverseTransform($event->getData());
-                    } catch (TransformationFailedException $e)
-                    {
-                        $event->setData(null);
-                    }
-                }
-            );
         }
 
     }
