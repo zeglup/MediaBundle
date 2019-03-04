@@ -1,14 +1,14 @@
 {
-    "name" : "donjohn/media-bundle",
+    "name" : "zeglup/media-bundle",
     "type": "symfony-bundle",
-    "description": "a simple media bundle inspired by sonata media bundle",
+    "description": "Fork from Donjohn/MediaBundle, a simple media bundle inspired by sonata media bundle",
     "keywords": ["media", "symfony"],
-    "homepage": "https://github.com/Donjohn/MediaBundle",
+    "homepage": "https://github.com/zeglup/MediaBundle",
     "license": "MIT",
     "authors": [
         {
-            "name": "Donjohn",
-            "email": "donjohn.geekzone@gmail.com",
+            "name": "Glup",
+            "email": "zeglup@gmail.com",
             "role": "Boss"
         }
     ],
